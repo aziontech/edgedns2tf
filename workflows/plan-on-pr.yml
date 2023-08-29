@@ -1,0 +1,58 @@
+name: Plan / Test On PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.0.9
+
+      - name: Run terraform fmt check
+        run: terraform fmt -check -diff -recursive ./terraform
+
+  plan:
+    name: Plan
+    env:
+      AZION_API_TOKEN: ${{ secrets.AZION_API_TOKEN }}
+    runs-on: ubuntu-latest
+      
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+      
+      - name: Initialize Terraform
+        run: terraform init -input=false          
+      
+      - name: Plan Terraform
+        id: plan
+        continue-on-error: true
+        run: terraform plan -input=false -lock=false -no-color -out=tfplan \
+          && terraform show -no-color tfplan  
+
+      - run: terraform show -no-color terraform.plan > terraform.text
+
+      - run: terraform show -json terraform.plan > terraform.json
+
+      - uses: ahmadnassri/action-terraform-report@v3
+        with:
+          # tell the action the plan outputs
+          terraform-text: ${{ github.workspace }}/terraform.text
+          terraform-json: ${{ github.workspace }}/terraform.json
+          remove-stale-reports: true
+
