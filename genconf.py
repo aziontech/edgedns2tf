@@ -42,7 +42,7 @@ class TerraformGenConfig:
 
                 self.config_content[resource_name] = content
 
-        #After process the record and dnssec resources 
+        #After process the record and dnssec resources
         for resource in self.json_output["values"]["root_module"]["resources"]:
             resource_type = resource["type"]
             resource_name = resource["name"]
@@ -54,7 +54,7 @@ class TerraformGenConfig:
             if resource_type == "azion_intelligent_dns_dnssec":
 
                 zone_name = self._find_zone(resource_values["zone_id"])
-                if zone_name != None:
+                if zone_name is not None:
                     content = f'resource "{resource_type}" "{resource_name}" {{\n'
                     content += f'    zone_id        = "{resource_values["zone_id"]}"\n'
                     content += '    dns_sec = {\n'
@@ -63,25 +63,25 @@ class TerraformGenConfig:
                     content += '}\n\n'
 
                     self.config_content[zone_name] += content
-  
+
             if resource_type == "azion_intelligent_dns_record":
 
                 zone_name = self._find_zone(resource_values["zone_id"])
-                if zone_name != None:
+                if zone_name is not None:
                     content = f'resource "{resource_type}" "{resource_name}" {{\n'
                     content += f'    zone_id        = "{resource_values["zone_id"]}"\n'
                     content += '    record = {\n'
-                    content += f'        answers_list = [\n'
+                    content += '        answers_list = [\n'
                     for answer in resource_values["record"]["answers_list"]:
                         content += f'            "{answer}",\n'
                     content += '        ]\n'
-                    if resource_values["record"]["description"] != None:
+                    if resource_values["record"]["description"] is not None:
                         content += f'        description  = "{resource_values["record"]["description"]}"\n'
                     content += f'        entry        = "{resource_values["record"]["entry"]}"\n'
                     content += f'        policy       = "{resource_values["record"]["policy"]}"\n'
                     content += f'        record_type  = "{resource_values["record"]["record_type"]}"\n'
                     content += f'        ttl          = {resource_values["record"]["ttl"]}\n'
-                    if resource_values["record"]["weight"] != None:
+                    if resource_values["record"]["weight"] is not None:
                         content += f'        weight       = {resource_values["record"]["weight"]}\n'
                     content += '    }\n'
                     content += '}\n\n'
@@ -89,8 +89,8 @@ class TerraformGenConfig:
                     self.config_content[zone_name] += content
 
     def _save_terraform_conf(self):
-        for name in self.config_content.keys():
-            with open(f'{name}.tf', "w") as file:
+        for name in self.config_content:
+            with open(f'{name}.tf', "w", encoding="utf-8") as file:
                 file.write(self.config_content[name])
 
     def generate_terraform_config(self):
@@ -107,11 +107,9 @@ class TerraformGenConfig:
         self._save_terraform_conf()
 
         #Move conf files to output folder
-        dir = os.getcwd()
-        for file in os.listdir(dir):
+        pwd = os.getcwd()
+        for file in os.listdir(pwd):
             if os.path.splitext(file)[-1] == '.tf':
-                shutil.move(os.path.join(dir, file), constants.OUTPUT_PATH)
+                shutil.move(os.path.join(pwd, file), constants.OUTPUT_PATH)
 
-        shutil.move(f'{dir}/{constants.TF_STATE}', f'{constants.OUTPUT_PATH}/{constants.TF_STATE}')
-
-
+        shutil.move(f'{pwd}/{constants.TF_STATE}', f'{constants.OUTPUT_PATH}/{constants.TF_STATE}')
