@@ -1,4 +1,7 @@
+#!/usr/bin/python3
+
 import os
+import sys
 import subprocess
 import glob
 import genconf
@@ -18,7 +21,7 @@ def delete_files_with_extension(extensions):
 TOKEN = os.getenv("AZION_API_TOKEN")
 if TOKEN is None:
     print("Please, execute export AZION_API_TOKEN=<token>")
-    exit(1)
+    sys.exit(1)
 
 delete_files_with_extension(["tf","sh","tfstate","backup"])
 
@@ -28,7 +31,7 @@ generator.create_state_generator()
 print("> Terraform State: Extration done")
 
 print("> Terraform State: Creating Terraform State...")
-subprocess.run(["./intermediate.sh"], shell=True, encoding="utf-8", stdout=subprocess.DEVNULL)
+subprocess.run(["./intermediate.sh"], shell=True, encoding="utf-8", stdout=subprocess.DEVNULL, check=False)
 generator.teardown()
 print("> Terraform State: Done")
 
