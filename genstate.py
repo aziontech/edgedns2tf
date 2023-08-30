@@ -34,18 +34,18 @@ class TerraformStateGenerator:
 
         for zone_id in output_values:
             self.zone_code += f'resource "azion_intelligent_dns_zone" "zone_{zone_id}" {{\n'
-            self.zone_code += '  zone {{\n'
+            self.zone_code += '  zone {\n'
             self.zone_code += f'    id = {zone_id}\n'
-            self.zone_code += '  }}\n'
-            self.zone_code += '}}\n\n'
+            self.zone_code += '  }\n'
+            self.zone_code += '}\n\n'
 
             self.import_idns += f'terraform import azion_intelligent_dns_zone.zone_{zone_id} {zone_id}\n'
 
             self.zone_code += f'resource "azion_intelligent_dns_dnssec" "dnssec_{zone_id}" {{\n'
-            self.zone_code += '  zone {{\n'
+            self.zone_code += '  zone {\n'
             self.zone_code += f'    id = {zone_id}\n'
-            self.zone_code += '  }}\n'
-            self.zone_code += '}}\n\n'
+            self.zone_code += '  }\n'
+            self.zone_code += '}\n\n'
 
             self.import_idns += f'terraform import azion_intelligent_dns_dnssec.dnssec_{zone_id} {zone_id}\n'
 
@@ -56,7 +56,7 @@ class TerraformStateGenerator:
             for record_id in records_output:
                 self.records_code += f'resource "azion_intelligent_dns_record" "record_{record_id}" {{\n'
                 self.records_code += f'  zone_id = {zone_id}\n'
-                self.records_code += '}}\n\n'
+                self.records_code += '}\n\n'
 
                 self.import_idns += f'terraform import azion_intelligent_dns_record.record_{record_id} {zone_id}/{record_id}\n'
 
