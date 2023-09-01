@@ -3,6 +3,7 @@ import subprocess
 import os
 import shutil
 import constants
+import util
 
 
 class TerraformGenConfig:
@@ -96,11 +97,15 @@ class TerraformGenConfig:
     def generate_terraform_config(self):
 
         #Prepare output folder
-        if not os.path.exists(constants.OUTPUT_PATH):
-            os.mkdir(constants.OUTPUT_PATH)
-        else:
-            shutil.rmtree(constants.OUTPUT_PATH)
-            os.mkdir(constants.OUTPUT_PATH)
+        try:
+            if not os.path.exists(constants.OUTPUT_PATH):
+                os.mkdir(constants.OUTPUT_PATH)
+            else:
+                shutil.rmtree(constants.OUTPUT_PATH)
+                os.mkdir(constants.OUTPUT_PATH)
+        except OSError as err:
+            print(f"Unexpected {err=}, {type(err)=}")
+            os.exit(1)
 
         self._parse_terraform_state()
         self._generate_terraform_content()
@@ -108,8 +113,18 @@ class TerraformGenConfig:
 
         #Move conf files to output folder
         pwd = os.getcwd()
-        for file in os.listdir(pwd):
-            if os.path.splitext(file)[-1] == '.tf':
-                shutil.move(os.path.join(pwd, file), constants.OUTPUT_PATH)
+        try:
+            for file in os.listdir(pwd):
+                if os.path.splitext(file)[-1] == '.tf':
+                    shutil.move(os.path.join(pwd, file), constants.OUTPUT_PATH)
 
-        shutil.move(f'{pwd}/{constants.TF_STATE}', f'{constants.OUTPUT_PATH}/{constants.TF_STATE}')
+            shutil.move(f'{pwd}/{constants.TF_STATE}', 
+                        f'{constants.OUTPUT_PATH}/{constants.TF_STATE}')
+            
+            shutil.rmtree('.terraform')
+            util.unlink_file(".terraform.lock.hcl")
+        except OSError as err:
+            print(f"Unexpected {err=}, {type(err)=}")
+            os.exit(1)
+        
+        print(f'> Terraform Config: Configuration available in the folder "{constants.OUTPUT_PATH}"')
