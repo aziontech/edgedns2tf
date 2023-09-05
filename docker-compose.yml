@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  idns2tf:
+    container_name: idns2tf
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ${BASEDIR:-.}:/app
+    environment:
+      AZION_API_TOKEN: ${AZION_API_TOKEN}

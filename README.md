@@ -13,12 +13,17 @@ Make check if the dependencies are met in your environment.
 ```
 pip3 install -r requirements.txt
 ```
+Alternatively, you can use the Docker command container version, where all of this has been already taken care for you.
 
 ## How to use?
 
+If running the script directly:
 ```
-export AZION_API_TOKEN=<azion_api_token>
-python3 idns2tf.py
+AZION_API_TOKEN=<azion_api_token> python3 idns2tf.py
+```
+Or, using the custom Docker command container:
+```
+AZION_API_TOKEN=<azion_api_token> docker-compose run --rm --build idns2tf
 ```
 
 Your DNS configurations (in Terraform format) + the Terraform state will be available in the **output** folder after the execution. 
