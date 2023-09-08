@@ -16,10 +16,10 @@ class TerraformGenConfig:
         output = subprocess.check_output(["terraform", "show", "-json"], encoding="utf-8")
         self.json_output = json.loads(output)
 
-    def _find_zone(self,zone_id):
-        for zone in self.config_content:
-            if zone_id in zone:
-                return zone
+    def _find_zone_resource_name(self,zone_id):
+        for resource_name in self.config_content:
+            if zone_id in resource_name:
+                return resource_name
         return None
 
     def _generate_terraform_content(self):
@@ -54,40 +54,48 @@ class TerraformGenConfig:
 
             if resource_type == "azion_intelligent_dns_dnssec":
 
-                zone_name = self._find_zone(resource_values["zone_id"])
-                if zone_name is not None:
-                    content = f'resource "{resource_type}" "{resource_name}" {{\n'
-                    content += f'    zone_id        = "{resource_values["zone_id"]}"\n'
-                    content += '    dns_sec = {\n'
-                    content += f'        is_enabled   = {str(resource_values["dns_sec"]["is_enabled"]).lower()}\n'
-                    content += '    }\n'
-                    content += '}\n\n'
+                zone_id = resource_values["zone_id"]
+                zone_resource_name = self._find_zone_resource_name(zone_id)
+                if zone_resource_name is None:
+                    print("WARNING: could not find a resource for the zone {} when importing its DNSSEC, which will be skipped!".format(zone_id))
+                    continue
 
-                    self.config_content[zone_name] += content
+                content = f'resource "{resource_type}" "{resource_name}" {{\n'
+                content += f'    zone_id        = azion_intelligent_dns_zone.{zone_resource_name}.id\n'
+                content += '    dns_sec = {\n'
+                content += f'        is_enabled   = {str(resource_values["dns_sec"]["is_enabled"]).lower()}\n'
+                content += '    }\n'
+                content += '}\n\n'
+
+                self.config_content[zone_resource_name] += content
 
             if resource_type == "azion_intelligent_dns_record":
 
-                zone_name = self._find_zone(resource_values["zone_id"])
-                if zone_name is not None:
-                    content = f'resource "{resource_type}" "{resource_name}" {{\n'
-                    content += f'    zone_id        = "{resource_values["zone_id"]}"\n'
-                    content += '    record = {\n'
-                    content += '        answers_list = [\n'
-                    for answer in resource_values["record"]["answers_list"]:
-                        content += f'            "{answer}",\n'
-                    content += '        ]\n'
-                    if resource_values["record"]["description"] is not None:
-                        content += f'        description  = "{resource_values["record"]["description"]}"\n'
-                    content += f'        entry        = "{resource_values["record"]["entry"]}"\n'
-                    content += f'        policy       = "{resource_values["record"]["policy"]}"\n'
-                    content += f'        record_type  = "{resource_values["record"]["record_type"]}"\n'
-                    content += f'        ttl          = {resource_values["record"]["ttl"]}\n'
-                    if resource_values["record"]["weight"] is not None:
-                        content += f'        weight       = {resource_values["record"]["weight"]}\n'
-                    content += '    }\n'
-                    content += '}\n\n'
+                zone_id = resource_values["zone_id"]
+                zone_resource_name = self._find_zone_resource_name(zone_id)
+                if zone_resource_name is None:
+                    print("WARNING: could not find a resource for the zone {} when importing its record {}, which will be skipped!".format(zone_id, resource_values["record"]["id"]))
+                    continue
 
-                    self.config_content[zone_name] += content
+                content = f'resource "{resource_type}" "{resource_name}" {{\n'
+                content += f'    zone_id        = azion_intelligent_dns_zone.{zone_resource_name}.id\n'
+                content += '    record = {\n'
+                content += '        answers_list = [\n'
+                for answer in resource_values["record"]["answers_list"]:
+                    content += f'            "{answer}",\n'
+                content += '        ]\n'
+                if resource_values["record"]["description"] is not None:
+                    content += f'        description  = "{resource_values["record"]["description"]}"\n'
+                content += f'        entry        = "{resource_values["record"]["entry"]}"\n'
+                content += f'        policy       = "{resource_values["record"]["policy"]}"\n'
+                content += f'        record_type  = "{resource_values["record"]["record_type"]}"\n'
+                content += f'        ttl          = {resource_values["record"]["ttl"]}\n'
+                if resource_values["record"]["weight"] is not None:
+                    content += f'        weight       = {resource_values["record"]["weight"]}\n'
+                content += '    }\n'
+                content += '}\n\n'
+
+                self.config_content[zone_resource_name] += content
 
     def _save_terraform_conf(self):
         for name in self.config_content:
