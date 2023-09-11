@@ -10,7 +10,7 @@ from util import get_terraform_bin
 def main():
     
     TOKEN = os.getenv("AZION_API_TOKEN")
-    if TOKEN is None:
+    if TOKEN is None or TOKEN == "":
         print("Please, execute export AZION_API_TOKEN=<token>")
         sys.exit(1)
 
@@ -23,7 +23,7 @@ def main():
     has_zones = generator.create_early_state()
     print("> Terraform State: Extration done")
 
-    if has_zones == True:
+    if has_zones:
         print("> Terraform State: Creating Terraform State...")
         generator.create_finally_state()
     print("> Terraform State: Done")
