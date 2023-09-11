@@ -102,6 +102,11 @@ class TerraformGenConfig:
             with open(f'{name}.tf', "w", encoding="utf-8") as file:
                 file.write(self.config_content[name])
 
+    def _format_terraform_conf(self):
+        fmt_output = subprocess.run(["terraform", "fmt", "-recursive", constants.OUTPUT_PATH], encoding="utf-8", stdout=subprocess.DEVNULL)
+        if fmt_output.returncode != 0:
+            print(f"WARNING: Failed to format the .tf files, fmt returned with status code {fmt_output.returncode}")
+
     def generate_terraform_config(self):
 
         #Prepare output folder
@@ -134,5 +139,8 @@ class TerraformGenConfig:
         except OSError as err:
             print(f"Unexpected {err=}, {type(err)=}")
             os.exit(1)
-        
+
+        print("> Terraform Config: Formatting the generated .tf files")
+        self._format_terraform_conf()
+
         print(f'> Terraform Config: Configuration available in the folder "{constants.OUTPUT_PATH}"')
