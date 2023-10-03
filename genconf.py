@@ -81,7 +81,8 @@ class TerraformGenConfig:
                 content += f'    zone_id        = azion_intelligent_dns_zone.{zone_resource_name}.id\n'
                 content += '    record = {\n'
                 content += '        answers_list = [\n'
-                for answer in resource_values["record"]["answers_list"]:
+                for ans in resource_values["record"]["answers_list"]:
+                    answer = ans.replace('"', r'\"')
                     content += f'            "{answer}",\n'
                 content += '        ]\n'
                 if resource_values["record"]["description"] is not None:
