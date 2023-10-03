@@ -2,7 +2,7 @@ TERRAFORM_INITAL_CONTENT='''terraform {
   required_providers {
     azion = {
       source = "aziontech/azion"
-      version = "~> 1.10.0"
+      version = "~> 1.12.0"
     }
   }
 }
