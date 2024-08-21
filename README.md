@@ -1,6 +1,6 @@
 # idns2tf
 
-IDNS2TF simplify the extraction of Azion intelligent DNS configurations and creation of Terraform configuration files based on zones and obtained DNS records.
+IDNS2TF simplify the extraction of Azion Edge DNS configurations and creation of Terraform configuration files based on zones and obtained DNS records.
 
 That tool is especially useful if you intend to manage your DNS settings in the GitOps model.
 
